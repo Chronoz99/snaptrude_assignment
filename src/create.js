@@ -147,5 +147,16 @@ export const addExampleMeshes = (scene) => {
   });
   const hexagonMesh = addCustomMesh(scene, hexagonBase, 5);
 
-  return [squareMesh, pentagonMesh, hexagonMesh];
+  // Octagon base
+  const octagonBase = Array.from({ length: 8 }, (_, i) => {
+    const angle = (i * 2 * Math.PI) / 8;
+    const radius = 5;
+    return [
+      radius * Math.cos(angle) + 15, // Offset to the right to avoid overlap
+      radius * Math.sin(angle)
+    ];
+  });
+  const octagonMesh = addCustomMesh(scene, octagonBase, 5);
+
+  return [squareMesh, pentagonMesh, hexagonMesh, octagonMesh];
 };
