@@ -26,6 +26,7 @@ export class EditModeManager {
         this.setupPointerObserver();
     }
 
+    // Toggles between edit and view modes, synchronizing camera state
     toggleEditMode() {
         this.isEditMode = !this.isEditMode;
         
@@ -45,6 +46,7 @@ export class EditModeManager {
         return this.isEditMode;
     }
 
+    // Sets up hover highlighting for meshes in edit mode
     setupMeshInteraction() {
         this.scene.meshes.forEach(mesh => {
             if (mesh.name === "ground1") return;
@@ -77,6 +79,7 @@ export class EditModeManager {
         });
     }
 
+    // Handles clicks on meshes and vertex markers in edit mode
     setupPointerObserver() {
         this.scene.onPointerObservable.add((pointerInfo) => {
             if (!this.isEditMode) return;
@@ -148,17 +151,21 @@ export class EditModeManager {
         this.vertexMarkers.clear();
     }
 
+    // Handles the logic for merging vertices when a vertex marker is selected
     handleVertexSelection(selectedVertex) {
         if (!this.selectedMesh?.brepData) return;
     
+        // Get the selected vertex data and initialize tracking structures
         const brep = this.selectedMesh.brepData;
         const selectedVertexIndex = selectedVertex.getIndex();
         const selectedPos = brep.positions[selectedVertexIndex];
         
+        // Track neighboring vertices and their relationships
         const neighbors = new Set();
         const neighborPositions = new Map();
         const neighborHalfEdges = new Map();
         
+        // Find all faces connected to the selected vertex
         const connectedFaces = VertexFaces(selectedVertex);
         
         const uniqueFaces = Array.from(
@@ -266,6 +273,7 @@ export class EditModeManager {
             } while (true);
         });
 
+        // Calculate the gap boundary after vertex removal
         const gapBoundaryVertices = new Set();
         const vertexPositions = new Map();
 
@@ -362,14 +370,17 @@ export class EditModeManager {
             return sign * angle;
         };
 
+        // Sort boundary vertices in clockwise order for proper face creation
         boundaryArray.sort((a, b) => {
             const angleA = calculateAngle(vertexPositions.get(a));
             const angleB = calculateAngle(vertexPositions.get(b));
             return angleA - angleB;
         });
 
+        // Create new mesh with updated topology
         const currentPositions = this.selectedMesh.brepData.getPositions();
         
+        // Track vertices to be removed and create mapping for new indices
         const verticesToRemove = new Set([selectedVertex.getIndex()]);
         if (bottomNeighborIndex !== null) {
             verticesToRemove.add(bottomNeighborIndex);
@@ -449,9 +460,27 @@ export class EditModeManager {
             newMesh.rotation = this.selectedMesh.rotation.clone();
             newMesh.scaling = this.selectedMesh.scaling.clone();
     
-            this.selectedMesh.dispose();
-            this.selectedMesh = newMesh;
-            this.createVertexMarkers();
+            // Store the old mesh reference
+            const oldMesh = this.selectedMesh;
+            
+            // Clear the current selection without affecting the highlight layer
+            this.selectedMesh = null;
+            this.removeAllVertexMarkers();
+            
+            // Dispose of the old mesh
+            oldMesh.dispose();
+            
+            // Set up the new mesh for interaction
+            if (!newMesh.actionManager) {
+                newMesh.actionManager = new ActionManager(this.scene);
+            }
+            
+            // Reselect the new mesh and update the UI
+            this.selectMesh(newMesh);
+            
+            // Make sure the mesh is highlighted
+            this.highlightLayer.addMesh(newMesh, Color3.Green());
+            
         } catch (error) {
             console.error('Error creating new mesh:', error);
         }

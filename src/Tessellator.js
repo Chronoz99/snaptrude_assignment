@@ -143,7 +143,7 @@ class Tessellator {
         );
       });
 
-      // Perform triangulation on the 2D projected points
+      // Perform triangulation on the 2D projected points as earcut only works with xy
       let triangles = earcut(earcutPath, [], 2);
 
       // Validate triangulation result

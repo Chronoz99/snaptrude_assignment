@@ -5,7 +5,7 @@ import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
 import { Scene } from "@babylonjs/core/scene";
 import { GridMaterial } from "@babylonjs/materials/grid/gridMaterial";
 import { CameraManager } from "./CameraManager";  // Updated import
-import { addExampleMeshes } from "./create";
+import { addExampleMeshes, addMesh } from "./create";
 import { EditModeManager } from "./editModeManager";
 
 // Get the canvas element from the DOM.
@@ -35,27 +35,24 @@ var ground = CreateGround("ground1", { width: 60, height: 60, subdivisions: 2 },
 // Affect a material
 ground.material = material;
 
+addMesh(scene)
+
 const meshes = addExampleMeshes(scene);
 
 // Initialize edit mode manager
 const editModeManager = new EditModeManager(scene, cameraManager);
 
-// Update the setupControls function to add edit mode toggle:
 function setupControls() {
     const controlsContainer = document.createElement('div');
-    controlsContainer.style.position = 'absolute';
-    controlsContainer.style.top = '20px';
-    controlsContainer.style.right = '20px';
-    controlsContainer.style.display = 'flex';
-    controlsContainer.style.gap = '10px';
-    controlsContainer.style.zIndex = '1000';
+    controlsContainer.className = 'controls-container';  // Using the new class instead of inline styles
 
     // Create toggle button for 2D/3D
     const toggleButton = document.createElement('button');
-    toggleButton.textContent = '2D/3D Toggle';
+    toggleButton.textContent = '2D View';
     toggleButton.addEventListener('click', () => {
         if (!editModeManager.isEditMode) {
             cameraManager.toggle2DMode();
+            toggleButton.textContent = toggleButton.textContent === '2D View' ? '3D View' : '2D View';
         }
     });
 
@@ -68,11 +65,11 @@ function setupControls() {
 
     // Create edit mode toggle button
     const editModeButton = document.createElement('button');
-    editModeButton.textContent = 'Toggle Edit Mode';
+    editModeButton.textContent = 'Edit Mode';
     editModeButton.addEventListener('click', () => {
         const isEditMode = editModeManager.toggleEditMode();
-        editModeButton.textContent = isEditMode ? 'Exit Edit Mode' : 'Toggle Edit Mode';
-        toggleButton.disabled = isEditMode; // Disable 2D/3D toggle during edit mode
+        editModeButton.textContent = isEditMode ? 'Exit Edit' : 'Edit Mode';
+        toggleButton.disabled = isEditMode;
     });
 
     // Add buttons to container

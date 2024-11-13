@@ -4,7 +4,7 @@ import Tessellator from "./Tessellator";
 
 export const addMesh = (scene) => {
   let brep = new BrepMesh();
-
+  
   const positions = [
     [5, 0, 5],
     [10, 0, 5],
@@ -27,17 +27,12 @@ export const addMesh = (scene) => {
 
   brep.setPositions(positions);
   brep.setCells(cells);
-
   brep.process();
 
   const tessellator = new Tessellator();
-  
-  const mesh = new CreateBox("box", {
-    size: 10,
-    updatable: true,
-  }, scene);
+  const mesh = new Mesh("box", scene);
 
-  const { geometry, faceFacetMapping } = tessellator.tessellate(brep, scene);
+  const { geometry } = tessellator.tessellate(brep, scene);
   if (!geometry) return;
 
   const material = new StandardMaterial("material", scene);
@@ -47,9 +42,12 @@ export const addMesh = (scene) => {
   geometry.applyToMesh(mesh);
   mesh.enableEdgesRendering();
   mesh.edgesColor = new Color4(0, 0, 0, 1);
-
   mesh.material = material;
   
+  // Store BRep data with the mesh
+  mesh.brepData = brep;
+  
+  return mesh;
 };
 
 
